@@ -41,6 +41,22 @@ async function login(email, password, ctx) {
 
   const token = jwt.sign({ sub: user.id }, env.jwtSecret, { expiresIn: env.jwtExpiresIn });
   return { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+
+
+  // testing purpise
+  async function login(email, password, ctx) {
+  console.log('[LOGIN DEBUG] Step 1: Login started');
+
+  const { rows } = await db.query(
+    'SELECT * FROM users WHERE lower(email) = lower($1)',
+    [email]
+  );
+  console.log('[LOGIN DEBUG] Step 2: Database query completed');
+
+  const user = rows[0];
+  console.log('[LOGIN DEBUG] Step 3: User found =', Boolean(user));
+
+  
 }
 
 module.exports = { login };
