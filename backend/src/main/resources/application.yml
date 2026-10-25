@@ -1,0 +1,54 @@
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: gym-management
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/gymdb}
+    username: ${DB_USER:gym}
+    password: ${DB_PASSWORD:gympass}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate      # Flyway owns the schema; Hibernate only checks it matches
+  flyway:
+    enabled: true
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
+
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        http-only: true
+        secure: ${COOKIE_SECURE:false}
+        same-site: lax
+
+app:
+  gym-name: ${GYM_NAME:IronPulse Fitness}
+  setup-token: ${SETUP_TOKEN:}
+  owner-email: ${OWNER_EMAIL:${MAIL_USERNAME:}}
+  mail-from: ${MAIL_FROM:${MAIL_USERNAME:}}   # the visible From address (must be verified with your provider)
+  timezone: ${APP_TIMEZONE:Asia/Kolkata}
+  reminders:
+    enabled: ${REMINDERS_ENABLED:true}
+    check-cron: ${REMINDER_CHECK_CRON:0 0 * * * *}   # hourly check; sends happen once per day thanks to dedupe keys
+    send-hour: ${REMINDER_SEND_HOUR:9}               # do not send before this local hour
+    upcoming-days: ${REMINDER_UPCOMING_DAYS:3}
+
+logging:
+  level:
+    root: INFO
+    com.gymapp: INFO
