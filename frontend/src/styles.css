@@ -161,3 +161,5 @@ td.row { display: flex; gap: 0.4rem; align-items: center; }
   td.row button, td button { min-height: 40px; }
   .panel:has(> table), .panel.scroll { padding: 0.75rem; }
 }
+.brand { overflow-wrap: anywhere; }
+  .brand { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

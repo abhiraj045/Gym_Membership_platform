@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import useTableLabels from './useTableLabels';
+import { GYM_NAME } from '../config';
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -12,7 +13,7 @@ export default function Layout() {
   return (
     <div className="shell">
       <aside className="side">
-        <div className="brand">Gym Fees</div>
+       <div className="brand" title={GYM_NAME}>{GYM_NAME}</div>
         <nav>
           <NavLink to="/" end>Dashboard</NavLink>
           <NavLink to="/members">Members</NavLink>
