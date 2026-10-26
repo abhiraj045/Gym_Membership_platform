@@ -15,7 +15,7 @@ CREATE TABLE users (
 );
 CREATE UNIQUE INDEX users_email_uq ON users (lower(email));
 
-CREATE -SUENCE member_code_seq;
+CREATE SEQUENCE member_code_seq;
 CREATE TABLE members (
   id           BIGSERIAL PRIMARY KEY,
   member_code  VARCHAR(20) NOT NULL UNIQUE
@@ -169,22 +169,3 @@ JOIN member_memberships mm ON mm.id = bp.membership_id
 LEFT JOIN payment_allocations pa ON pa.billing_period_id = bp.id
 LEFT JOIN payments p ON p.id = pa.payment_id
 GROUP BY bp.id, mm.id;
-
--- testing below...
-
-SELECT current_database(), current_schema();
-
-SELECT to_regclass('public.users');
-
-
-SELECT
-    n.nspname AS schema_name,
-    c.relname AS object_name,
-    c.relkind AS object_type
-FROM pg_class c
-JOIN pg_namespace n ON n.oid = c.relnamespace
-WHERE lower(c.relname) = 'users';
-
-SELECT COUNT(*) AS users_found
-FROM pg_tables
-WHERE tablename = 'users';
