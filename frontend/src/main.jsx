@@ -5,6 +5,7 @@ import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import './styles.css';
 import { GYM_NAME } from './config';
+
 document.title = GYM_NAME;
 
 createRoot(document.getElementById('root')).render(
