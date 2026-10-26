@@ -20,7 +20,7 @@ async function run() {
       await client.query('INSERT INTO schema_migrations (filename) VALUES ($1)', [file]);
       await client.query('COMMIT');
       console.log(`applied ${file}`);
-    }     } catch (err) {
+    }      catch (err) {
       await client.query('ROLLBACK');
       let near = '';
       if (err.position) {
@@ -35,3 +35,4 @@ async function run() {
 
 
 run().then(() => pool.end()).catch((err) => { console.error(err.message); process.exit(1); });
+}
