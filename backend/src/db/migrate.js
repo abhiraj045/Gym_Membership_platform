@@ -20,13 +20,18 @@ async function run() {
       await client.query('INSERT INTO schema_migrations (filename) VALUES ($1)', [file]);
       await client.query('COMMIT');
       console.log(`applied ${file}`);
-    } catch (err) {
+    }     } catch (err) {
       await client.query('ROLLBACK');
-      throw new Error(`Migration ${file} failed: ${err.message}`);
-    } finally {
+      let near = '';
+      if (err.position) {
+        const pos = Number(err.position);
+        near = `\n>>> near: ${sql.slice(Math.max(0, pos - 80), pos + 40)}`;
+      }
+      throw new Error(`Migration ${file} failed: ${err.message}${near}`);
+    }  finally {
       client.release();
     }
   }
-}
+
 
 run().then(() => pool.end()).catch((err) => { console.error(err.message); process.exit(1); });
