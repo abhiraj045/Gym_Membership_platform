@@ -1,9 +1,13 @@
+import { useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import useTableLabels from './useTableLabels';
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
+  const mainRef = useRef(null);
+  useTableLabels(mainRef);
   const isOwner = user?.role === 'owner';
   return (
     <div className="shell">
@@ -22,7 +26,7 @@ export default function Layout() {
           <button className="link" onClick={async () => { await logout(); nav('/login'); }}>Log out</button>
         </div>
       </aside>
-      <main className="main"><Outlet /></main>
+      <main className="main" ref={mainRef}><Outlet /></main>
     </div>
   );
 }

@@ -1,0 +1,1 @@
+export const GYM_NAME = import.meta.env.VITE_GYM_NAME || 'Light Weight Gym';
