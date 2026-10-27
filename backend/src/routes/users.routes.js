@@ -13,4 +13,7 @@ router.post('/', validate(schemas.userCreate), asyncHandler(async (req, res) =>
 router.put('/:id', validate(schemas.userUpdate), asyncHandler(async (req, res) =>
   res.json(await users.update(Number(req.params.id), req.body, req.ctx))));
 
+router.delete('/:id', asyncHandler(async (req, res) =>
+  res.json(await users.remove(Number(req.params.id), req.ctx))));
+
 module.exports = router;

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import api, { errMsg } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { money, label } from '../utils/format';
 
 export default function MemberDetail() {
   const { id } = useParams();
+  const nav = useNavigate();
   const { user } = useAuth();
   const isOwner = user.role === 'owner';
   const [d, setD] = useState(null);
@@ -34,6 +35,13 @@ export default function MemberDetail() {
   const { member, memberships, billing_periods: periods, payments, totals } = d;
   const openPeriods = periods.filter((p) => Number(p.balance) > 0 && p.membership_status === 'active');
   const today = new Date().toISOString().slice(0, 10);
+
+  const deleteMember = async () => {
+    if (!window.confirm(`Permanently delete ${member.full_name}? This cannot be undone.\n\nOnly members with no payments can be deleted. Otherwise use Deactivate.`)) return;
+    setMsg(''); setError('');
+    try { await api.delete(`/members/${id}`); nav('/members'); }
+    catch (e) { setError(errMsg(e)); }
+  };
 
   const startEdit = () => {
     setEdit({ full_name: member.full_name, phone: member.phone, email: member.email || '', notes: member.notes || '' });
@@ -75,6 +83,7 @@ export default function MemberDetail() {
           {isOwner && (member.status === 'active'
             ? <button onClick={() => window.confirm('Deactivate this member? Their history is kept.') && run(() => api.post(`/members/${id}/deactivate`))}>Deactivate</button>
             : <button onClick={() => run(() => api.post(`/members/${id}/activate`))}>Activate</button>)}
+          {isOwner && <button onClick={deleteMember} style={{ color: 'var(--bad)', borderColor: 'var(--bad)' }}>Delete</button>}
         </div>
       </div>
       {msg && <p className="ok">{msg}</p>}

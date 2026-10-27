@@ -25,6 +25,8 @@ router.post('/:id/deactivate', requireRole('owner'), asyncHandler(async (req, re
   res.json(await members.setStatus(Number(req.params.id), 'inactive', req.ctx))));
 router.post('/:id/activate', requireRole('owner'), asyncHandler(async (req, res) =>
   res.json(await members.setStatus(Number(req.params.id), 'active', req.ctx))));
+router.delete('/:id', requireRole('owner'), asyncHandler(async (req, res) =>
+  res.json(await members.remove(Number(req.params.id), req.ctx))));
 router.post('/:id/memberships', validate(schemas.membershipCreate), asyncHandler(async (req, res) =>
   res.status(201).json(await memberships.create(Number(req.params.id), req.body, req.ctx))));
 

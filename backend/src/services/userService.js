@@ -47,4 +47,30 @@ async function update(id, body, ctx) {
   });
 }
 
-module.exports = { list, createStaff, update };
+// Staff accounts can be deleted only if they never recorded anything (no payments received or voided,
+// no changes in the audit log other than logging in/out). Otherwise deactivate, so accountability is kept.
+async function remove(id, ctx) {
+  return db.withTransaction(async (c) => {
+    const { rows } = await c.query(`SELECT ${PUBLIC} FROM users WHERE id = $1 FOR UPDATE`, [id]);
+    const user = rows[0];
+    if (!user) throw new AppError(404, 'User not found');
+    if (user.role === 'owner') throw new AppError(400, 'The owner account cannot be deleted');
+    if (user.id === ctx.userId) throw new AppError(400, 'You cannot delete your own account');
+
+    const { rows: used } = await c.query(
+      `SELECT 1 FROM payments WHERE received_by = $1 OR voided_by = $1
+       UNION ALL
+       SELECT 1 FROM audit_logs WHERE user_id = $1 AND action NOT IN ('login', 'login_failed', 'logout')
+       LIMIT 1`,
+      [id]
+    );
+    if (used.length) {
+      throw new AppError(409, 'This staff member has recorded payments or changes, so the account cannot be deleted. Deactivate it instead.');
+    }
+    await c.query('DELETE FROM users WHERE id = $1', [id]);
+    await audit(c, ctx, { action: 'user_delete', entityType: 'user', entityId: id, oldValues: { name: user.name, email: user.email, role: user.role } });
+    return { id, deleted: true };
+  });
+}
+
+module.exports = { list, createStaff, update, remove };

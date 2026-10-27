@@ -38,6 +38,12 @@ export default function Members() {
     } catch (err) { setFormError(errMsg(err)); }
   };
 
+  const remove = async (m) => {
+    if (!window.confirm(`Delete ${m.full_name} (${m.member_code})? This cannot be undone.\n\nOnly members with no payments can be deleted. Otherwise open the member and use Deactivate.`)) return;
+    try { await api.delete(`/members/${m.id}`); load(); }
+    catch (err) { setError(errMsg(err)); }
+  };
+
   return (
     <div>
       <div className="head">
@@ -70,7 +76,7 @@ export default function Members() {
       {error && <p className="error">{error}</p>}
       <section className="panel scroll">
         <table>
-          <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Status</th><th className="num">Outstanding</th><th className="num">Overdue</th></tr></thead>
+          <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Status</th><th className="num">Outstanding</th><th className="num">Overdue</th>{user.role === 'owner' && <th></th>}</tr></thead>
           <tbody>
             {res.data.map((m) => (
               <tr key={m.id}>
@@ -80,9 +86,10 @@ export default function Members() {
                 <td><span className={`tag ${m.status}`}>{m.status}</span></td>
                 <td className="num">{money(m.outstanding)}</td>
                 <td className={`num ${Number(m.overdue) > 0 ? 'bad' : ''}`}>{money(m.overdue)}</td>
+                {user.role === 'owner' && <td><button style={{ color: 'var(--bad)', borderColor: 'var(--bad)' }} onClick={() => remove(m)}>Delete</button></td>}
               </tr>
             ))}
-            {res.data.length === 0 && <tr><td colSpan="6" className="muted">No members match. Try a different search, or add a member.</td></tr>}
+            {res.data.length === 0 && <tr><td colSpan="7" className="muted">No members match. Try a different search, or add a member.</td></tr>}
           </tbody>
         </table>
       </section>

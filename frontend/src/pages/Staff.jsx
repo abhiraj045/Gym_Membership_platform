@@ -36,6 +36,7 @@ export default function Staff() {
                 <td className="row">
                   {u.role === 'staff' && <button onClick={() => act(() => api.put(`/users/${u.id}`, { is_active: !u.is_active }))}>{u.is_active ? 'Deactivate' : 'Activate'}</button>}
                   {u.role === 'staff' && <button onClick={() => { const p = window.prompt('New password (min 10 characters):'); if (p) act(() => api.put(`/users/${u.id}`, { password: p }), 'Password reset.'); }}>Reset password</button>}
+                  {u.role === 'staff' && <button style={{ color: 'var(--bad)', borderColor: 'var(--bad)' }} onClick={() => window.confirm(`Delete the staff account for ${u.name}? This cannot be undone.\n\nIf they have recorded payments or changes, use Deactivate instead.`) && act(() => api.delete(`/users/${u.id}`), 'Staff account deleted.')}>Delete</button>}
                 </td></tr>
             ))}
           </tbody>

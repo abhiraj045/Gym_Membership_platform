@@ -119,6 +119,25 @@ async function setStatus(id, status, ctx) {
   });
 }
 
+// Hard delete is only allowed for members with NO payment history (added by mistake, or test data).
+// Anyone who has ever paid must be deactivated instead, so financial records are never lost.
+async function remove(id, ctx) {
+  return db.withTransaction(async (c) => {
+    const { rows } = await c.query('SELECT * FROM members WHERE id = $1 FOR UPDATE', [id]);
+    if (!rows[0]) throw new AppError(404, 'Member not found');
+    const { rows: paid } = await c.query('SELECT 1 FROM payments WHERE member_id = $1 LIMIT 1', [id]);
+    if (paid.length) {
+      throw new AppError(409, 'This member has payment history, so it cannot be deleted. Deactivate the member instead.');
+    }
+    await c.query('DELETE FROM notifications WHERE member_id = $1', [id]);
+    await c.query('DELETE FROM billing_periods WHERE membership_id IN (SELECT id FROM member_memberships WHERE member_id = $1)', [id]);
+    await c.query('DELETE FROM member_memberships WHERE member_id = $1', [id]);
+    await c.query('DELETE FROM members WHERE id = $1', [id]);
+    await audit(c, ctx, { action: 'member_delete', entityType: 'member', entityId: id, oldValues: rows[0] });
+    return { id, deleted: true };
+  });
+}
+
 async function exportCsv() {
   const { rows } = await db.query(
     `SELECT member_code, full_name, phone, email, joining_date, status FROM members ORDER BY member_code`);
@@ -129,4 +148,4 @@ async function exportCsv() {
   ], rows);
 }
 
-module.exports = { list, getDetail, create, update, setStatus, exportCsv };
+module.exports = { list, getDetail, create, update, setStatus, remove, exportCsv };
